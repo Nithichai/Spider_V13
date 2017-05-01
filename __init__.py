@@ -1,6 +1,5 @@
 from Spider_Control import SpiderControl    # Library for control spider
 from nodebox.graphics import *              # Library for draw canvas
-import thread
 
 
 # Get function of deeping to set with button
@@ -28,6 +27,14 @@ def pause_deep(button):
     spider.pause_deep()
 
 
+def prev_index(button):
+    spider.prev_file()
+
+
+def next_index(button):
+    spider.next_file()
+
+
 # Draw graph to set with button
 def draw(my_canvas):
     spider.spider_view.draw_graph(my_canvas)
@@ -40,6 +47,8 @@ if __name__ == '__main__':
     spider.spider_view.set_indexing(indexing)                   # set method to indexing
     spider.spider_view.set_go(searching_word)                   # set method to start search
     spider.spider_view.set_pause(pause_deep)                    # set method to pause to deep
+    spider.spider_view.set_prev(prev_index)
+    spider.spider_view.set_next(next_index)
     spider.spider_view.set_gui(canvas)                          # set method to set GUI
     canvas.run(draw)
 

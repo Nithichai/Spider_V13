@@ -1,7 +1,8 @@
 from Spider_Model import SpiderModel
 import unittest
 import json
-
+import os
+from nodebox.graphics.physics import Graph      # Library use to draw graph
 
 class SpiderModelSavingTestCase(unittest.TestCase):
     def setUp(self):
@@ -11,9 +12,9 @@ class SpiderModelSavingTestCase(unittest.TestCase):
         self.assertRaises(TypeError, self.spider.get_html_code, 123)
 
     def test_get_htmlcode_to_datastr(self):
-        data_from_code = self.spider.get_htmlcode_to_datastr('<a href="http://www.google.com">Test</a>')
+        data_from_code = self.spider.get_html_code_to_datastr('', '<a href="http://www.google.com">Test</a>')
         self.assertEqual(data_from_code, "[Test](http://www.google.com)")
-        data_from_code = self.spider.get_htmlcode_to_datastr("<h1>My Test</h1>")
+        data_from_code = self.spider.get_html_code_to_datastr("", "<h1>My Test</h1>")
         self.assertEqual(data_from_code, "My Test")
 
     def test_get_htmlcode_to_datastr_Error(self):
@@ -88,10 +89,10 @@ class SpiderModelSavingTestCase(unittest.TestCase):
                 }
             }
         }
-        self.assertDictEqual(json.loads(data_from_json), json_dict)
+        self.assertDictEqual(data_from_json, json_dict)
 
     def test_set_n_used_Error(self):
-        self.assertRaises(TypeError, self.spider.set_n_used, ['789'],['AA'])
+        self.assertRaises(TypeError, self.spider.set_n_used, ['789'], ['AA'])
 
     def test_set_n_used(self):
         root_website = "http://www.nintendo.com"
@@ -124,7 +125,8 @@ class SpiderModelSavingTestCase(unittest.TestCase):
                         "content": "youtube1",
                         "website": [
                             "http://www.google.com",
-                            "http://www.nintendo.com"
+                            "http://www.youtube.com",
+                            "http://www.nintendo.com",
                         ]
                     }
                 }
@@ -142,8 +144,8 @@ class SpiderModelSavingTestCase(unittest.TestCase):
     def test_set_avoid_word(self):
         self.assertRaises(TypeError, self.spider.set_avoid_word, {})
 
-    def test_set_n_used_for_indexing(self):
-        self.assertRaises(TypeError, self.spider.set_n_used_for_indexing, {})
+    """def test_set_n_used_for_indexing(self):
+        self.assertRaises(TypeError, self.spider.set_n_used_for_indexing, {})"""
 
     def test_indexing_error(self):
         self.assertRaises(TypeError, self.spider.indexing, 123, {})
@@ -237,6 +239,133 @@ class SpiderModelSavingTestCase(unittest.TestCase):
         website = "http://www.nintendo.com/mario"
         self.assertEqual(self.spider.get_netloc(website), "www.nintendo.com")
 
+    def test_total(self):
+        root_website = "http://www.meawnam.com"
+        file_data = open(os.getcwd() + "\\Spider\\other\\test_total.html", "r+")
+        html_code = file_data.read()
+        file_data.close()
+        data_str_html = self.spider.get_html_code_to_datastr(root_website, html_code)
+        self.assertEqual(data_str_html, "GAMEBOY  [GOOGLE](http://www.google.com) "
+                                        "[electric](http://www.electric.com) "
+                                        "[spotlight](http://www.spotlight.com)")
+        content_html = self.spider.get_content_from_datastr(data_str_html)
+        self.assertEqual(content_html, "GAMEBOY")
+        weblink_html = self.spider.get_weblink_from_datastr(data_str_html)
+        self.assertEqual(weblink_html, "GOOGLE electric spotlight")
+        website_list = self.spider.get_website_from_datastr(data_str_html)
+        self.assertListEqual(website_list, ["http://www.google.com", "http://www.electric.com",
+                                            "http://www.spotlight.com"])
+        dict_json = {
+            root_website: {
+                self.spider.get_netloc(root_website): {
+                    root_website: {
+                        "content": content_html + " " + weblink_html,
+                        "website": website_list
+                    }
+                }
+
+            }
+        }
+        content_dict = {
+            root_website: content_html + " " + weblink_html
+        }
+        website_dict = {
+            root_website: website_list
+        }
+        self.assertDictEqual(self.spider.get_json_string_for_deep(root_website, website_dict, content_dict), dict_json)
+
+        graph = Graph()
+        graph.add_node("www.meawnam.com")
+        graph.add_node("www.google.com")
+        graph.add_node("www.electric.com")
+        graph.add_node("www.spotlight.com")
+        graph.add_edge("www.meawnam.com", "www.google.com")
+        graph.add_edge("www.meawnam.com", "www.electric.com")
+        graph.add_edge("www.meawnam.com", "www.electric.com")
+        graph.add_edge("www.meawnam.com", "www.spotlight.com")
+        self.assertEqual(graph, self.spider.set_into_graph(root_website, dict_json))
+
+        dict_n_used = {
+            "www.meawnam.com": 0,
+            "www.google.com": 1,
+            "www.electric.com": 1,
+            "www.spotlight.com": 1
+        }
+        self.assertEqual(dict_n_used, self.spider.set_n_used(root_website, dict_json))
+
+        save_file = open(os.getcwd() + "\\Spider\\other\\test_index_total.json", "w+")
+        save_file.write(json.dumps(dict_json, indent=4, sort_keys=True))
+        save_file.close()
+        file_list = [os.getcwd() + "\\Spider\\other\\test_index_total.json"]
+        index_dict = self.spider.indexing({}, file_list)
+        my_indexing = {
+            "gameboy": {
+                "http://www.meawnam.com": {
+                    "used": 0,
+                    "word": 1
+                }
+            },
+            "google": {
+                "http://www.meawnam.com": {
+                    "used": 0,
+                    "word": 1
+                }
+            },
+            "electric": {
+                "http://www.meawnam.com": {
+                    "used": 0,
+                    "word": 1
+                }
+            },
+            "spotlight": {
+                "http://www.meawnam.com": {
+                    "used": 0,
+                    "word": 1
+                }
+            }
+        }
+        self.assertDictEqual(index_dict, my_indexing)
+
+        ranking_dict = self.spider.ranking(index_dict)
+        my_ranking = {
+            "gameboy":
+                [
+                    (
+                        "http://www.meawnam.com", {
+                            "used": 0,
+                            "word": 1
+                        }
+                    )
+                ],
+            "google":
+                [
+                    (
+                        "http://www.meawnam.com", {
+                            "used": 0,
+                            "word": 1
+                        }
+                    )
+                ],
+            "electric":
+                [
+                    (
+                        "http://www.meawnam.com", {
+                            "used": 0,
+                            "word": 1
+                        }
+                    )
+                ],
+            "spotlight":
+                [
+                    (
+                        "http://www.meawnam.com", {
+                            "used": 0,
+                            "word": 1
+                        }
+                    )
+                ]
+        }
+        self.assertDictEqual(ranking_dict, my_ranking)
 
 if __name__ == '__main__':
     unittest.main()
