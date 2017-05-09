@@ -1,8 +1,7 @@
 from nodebox.gui import *       # Library for GUI
 from nodebox.graphics import *  # Library for draw canvas
-from nodebox.graphics.physics import Graph      # Library use to draw graph
+from nodebox.graphics.physics import Node, Edge,Graph      # Library use to draw graph
 import math                     # Library for calculate distance mouse and node
-import networkx     # Library use save website in graph
 
 update_website_func = None
 show_output_func = None
@@ -11,7 +10,7 @@ go_func = None
 pause_func = None
 prev_func = None
 next_func = None
-
+dragged = None
 
 class SpiderView:
     def __init__(self, spider_model):
@@ -57,7 +56,7 @@ class SpiderView:
         self.index_panel.pack()                 # show index_panel
         my_canvas.append(self.index_panel)      # add index_panel into canvas
 
-        layout = Rows(width=500, height=300)    # set layout
+        layout = Rows(width=300, height=300)    # set layout
         layout.extend([                         # add object in layout
             # add field to insert website
             ("Search", Field(value="tracer", id="word_text", wrap=True)),   # add field to insert word to search
@@ -71,11 +70,11 @@ class SpiderView:
 
     def draw_graph(self, my_canvas):
         # print "start : draw_graph : SpiderView"
-        my_canvas.size = 1080, 720              # set size of canvas
+        my_canvas.size = 800, 600              # set size of canvas
         my_canvas.clear()                       # clear canvas
         offset_x = my_canvas.width / 2          # set offset x of graph
         offset_y = my_canvas.height / 2         # set offset y of graph
-        push()  # push matrix
+        push()                                  # push matrix
         background(Color(255))                  # set background = white
         translate(offset_x, offset_y)           # move graph to offset
 
@@ -85,11 +84,9 @@ class SpiderView:
         if len(self.show_graph.nodes) > 0:
             root_node_id = self.spider_model.get_netloc(self.graph_website)
             node_deep_list = self.show_graph.node(root_node_id).flatten(depth=self.deep)
-
             for node in self.show_graph.nodes:
                 if node not in node_deep_list:
                     self.show_graph.remove(node)
-
             for node in self.show_graph.nodes:      # get node from graph
                 num = self.dict_used[node.id]       # get number of used (netloc)
                 node.radius = 8 + int(num * 0.05)   # set radius
@@ -102,19 +99,16 @@ class SpiderView:
                     node.fill = Color(255, 0, 0)
                 else:
                     node.text.fill = Color(0)
-
-                # detect mouse on node
-                if math.sqrt((mx - node.x) * (mx - node.x) + (my - node.y) * (my - node.y)) < node.radius:
-                    if node.id != "":                                       # detect node has value
-                        self.draw_result_text(my_canvas, node.id, num)      # set text of result
-
-            for edge in self.show_graph.edges:  # get edge from graph
+            for edge in self.show_graph.edges:      # get edge from graph
                 edge.length = 20                    # set edge length
                 edge.stroke = Color(0)              # set stroke color
                 edge.strokewidth = 2                # set stroke width
-
-            self.show_graph.update()             # update graph
-            self.show_graph.draw(directed=True)  # draw grpah
+            node_choose = self.show_graph.node_at(mx, my)
+            if node_choose != None:
+                node_choose.fill = Color(0, 255, 0)
+                self.draw_result_text(my_canvas, node_choose.id, num)      # set text of result
+            self.show_graph.draw(directed=True)     # draw grpah
+            self.show_graph.update()                # update graph
         pop()                                                           # pop matrix
         self.result_text.draw(x=20, y=my_canvas.height - 70)  # draw result text
         self.draw_update_text(my_canvas)                                # draw update text

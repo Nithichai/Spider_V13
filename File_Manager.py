@@ -79,14 +79,14 @@ class FileManager:
         return [os.getcwd() + "\\website\\" + data for data in list_data]
 
     def read_website_file(self, model, website):
-        file_name = model.get_website_no_scheme(website).replace(".", "_").replace("/", "#") + ".json"
+        file_name = model.website_formatter(website).replace(".", "_").replace("/", "#").replace(":", "$") + ".json"
         file_write = open(os.getcwd() + "\\website\\" + file_name, "r+")
         data = file_write.read()
         file_write.close()
         return data
 
     def write_website_file(self, model, website, data):
-        file_name = model.get_website_no_scheme(website).replace(".", "_").replace("/", "#") + ".json"
+        file_name = model.website_formatter(website).replace(".", "_").replace("/", "#").replace(":", "$") + ".json"
         file_write = open(os.getcwd() + "\\website\\" + file_name, "w+")
         file_write.write(json.dumps(data, indent=4, sort_keys=True))
         file_write.close()

@@ -29,7 +29,7 @@ class SpiderControl:
         self.file_website_list = self.file_manager.list_website_file()
         self.file_index = -1
         self.max_thread = 100
-        self.time_delay = 1
+        self.time_delay = 3
         self.list_web_in_hop = []
 
         # self.gather_website_all()
@@ -169,8 +169,9 @@ class SpiderControl:
 
     # do when pause deep
     def when_pause_deep(self, list_web_in_hop, n_deep):
-        while self.thread_deep_count > 0:
-            pass
+        # while self.thread_deep_count > 0:
+        #     pass
+        self.save_data_to_json()
         if len(self.list_website) > 1:  # detect website in next deep is reach
             # merge website from save website and website is found
             self.list_website[1] = list(set(self.list_website[1]) | set(self.list_web_in_hop))
@@ -211,8 +212,8 @@ class SpiderControl:
     def start_to_show(self):
         self.index_website_show = self.spider_view.get_root_website().encode("ascii", "ignore")
         self.word = self.spider_view.get_word()  # set word
-        json_file_name = self.spider_model.get_website_no_scheme(self.index_website_show)\
-                             .replace("/", "#").replace(".", "_") + ".json"
+        json_file_name = self.spider_model.website_formatter(self.index_website_show)\
+                             .replace("/", "#").replace(".", "_").replace(":", "$") + ".json"
         json_file = open(os.getcwd() + "\\website\\" + json_file_name, "r+")  # open to read file
         json_dict = self.spider_model.change_json_to_dict(json_file.read())  # set json string to dict
         show_graph = self.spider_model.set_into_graph(self.index_website_show, json_dict)  # set data to graph

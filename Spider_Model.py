@@ -78,14 +78,14 @@ class SpiderModel:
         if type(datastr) != str:
             raise TypeError("Type Error input is not string")
         print "start : get_content_from_datastr : SpiderModelSaving"
-        if len(datastr) == 0:                                                # detect no word
+        if len(datastr) == 0:                                                 # detect no word
             print "no word : get_content_from_datastr : SpiderModelSaving"
             return ""
         data_del_website = re.sub(r'\((.*?)\)', " ", datastr)                 # delete word in (website)
         data_del_web_content = re.sub(r'\[(.*?)\]', " ", data_del_website)    # delete word in [content_weblink]
-        if data_del_web_content.strip() != "":                               # detect data has word
+        if data_del_web_content.strip() != "":                                # detect data has word
             print "complete : get_content_from_datastr : SpiderModelSaving"
-            return re.sub(r'[^a-zA-Z]', " ", data_del_web_content).strip()   # strip space and return content
+            return re.sub(r'[^a-zA-Z]', " ", data_del_web_content).strip()    # strip space and return content
         return ""
 
     # Method to get website from datastring (data string)

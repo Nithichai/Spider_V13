@@ -241,11 +241,11 @@ class SpiderModelSavingTestCase(unittest.TestCase):
 
     def test_total(self):
         root_website = "http://www.meawnam.com"
-        file_data = open(os.getcwd() + "\\Spider\\other\\test_total.html", "r+")
+        file_data = open(os.getcwd() + "\\other\\test_total.html", "r+")
         html_code = file_data.read()
         file_data.close()
         data_str_html = self.spider.get_html_code_to_datastr(root_website, html_code)
-        self.assertEqual(data_str_html, "GAMEBOY  [GOOGLE](http://www.google.com) "
+        self.assertEqual(data_str_html, "GAMEBOY [GOOGLE](http://www.google.com) "
                                         "[electric](http://www.electric.com) "
                                         "[spotlight](http://www.spotlight.com)")
         content_html = self.spider.get_content_from_datastr(data_str_html)
@@ -293,10 +293,10 @@ class SpiderModelSavingTestCase(unittest.TestCase):
         }
         self.assertEqual(dict_n_used, self.spider.set_n_used(root_website, dict_json))
 
-        save_file = open(os.getcwd() + "\\Spider\\other\\test_index_total.json", "w+")
+        save_file = open(os.getcwd() + "\\other\\test_index_total.json", "w+")
         save_file.write(json.dumps(dict_json, indent=4, sort_keys=True))
         save_file.close()
-        file_list = [os.getcwd() + "\\Spider\\other\\test_index_total.json"]
+        file_list = [os.getcwd() + "\\other\\test_index_total.json"]
         index_dict = self.spider.indexing({}, file_list)
         my_indexing = {
             "gameboy": {
